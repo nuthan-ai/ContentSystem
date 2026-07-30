@@ -46,12 +46,21 @@ The system is a pipeline with a strict cost philosophy: **everything before the 
 
 `llm/openrouter.py` is the only LLM touchpoint (OpenAI-compatible; model list proxied to the frontend; key precedence: Setting table > .env). Progress streams to the UI via SSE (`/api/runs/{id}/events`).
 
-**Frontend** (`frontend/`) — Vite/React/TS, Tailwind + shadcn/ui, TanStack Query. Has a mock mode (`VITE_USE_MOCKS`) that renders the full dashboard without a backend.
+**Frontend** (`frontend/`) — Vite/React/TS, Tailwind v4, hand-rolled UI primitives (`src/components/ui/primitives.tsx`), TanStack Query. Falls back to rich mock data automatically whenever the API is unreachable (or force with `VITE_USE_MOCKS=true`), showing a "Demo data" badge — this renders the full dashboard without a backend running.
 
 **The contract**: `docs/API_CONTRACT.md` defines every endpoint and JSON shape shared by backend and frontend, mirrored in `frontend/src/lib/types.ts`. Change the contract file first, then both sides — never let them drift.
 
 ## Conventions
 
-- Keep new research sources behind the `collectors/base.py` protocol and a `sources_enabled` settings toggle; login-required channels (Twitter/X) are deliberately deferred.
+- Keep new research sources behind the `collectors/base.py` protocol and a `sources_enabled` settings toggle; login-required channels (Twitter/X, Reddit) are deliberately deferred.
 - Cost guards are load-bearing: per-category filter caps and `llm_item_cap` exist so a run costs cents. Don't bypass them.
 - Runtime settings (feeds, subreddits, keyword rules, model choice) belong in the Setting table via `/api/settings`, not hardcoded.
+
+## Known live-source degradations (as of last verification)
+
+These are handled gracefully by design — a source going down never fails a run, it just contributes fewer items:
+
+- **Reddit's public JSON endpoint (`www.reddit.com/r/*/hot.json`) currently returns 403** from this environment. The collector returns 0 items rather than raising. Fixing this requires the login-based path (deferred, matches agent-reach's own findings on Reddit).
+- **GitHub search API rate-limits (403) after ~4-5 unauthenticated requests** per run. Set `GITHUB_TOKEN` in `.env` to raise the ceiling (needs no scopes — public search only).
+- **Google Trends and Jina competition search (`s.jina.ai`) throttle anonymous requests** in this environment. `signals.py` renormalizes its blend weights when a component is unavailable and defaults competition to `"medium"` rather than failing.
+- 3 of the original default RSS feeds were dead and replaced/disabled: Anthropic has no public RSS feed (disabled), Microsoft AI Blog returned 404 on every URL tried (disabled), Meta AI Blog had no working feed (swapped for Meta Engineering Blog, which covers AI content and works).

@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, Consolas, "SFMono-Regular", monospace;
+}
+
+/* ---- Design tokens (dark-first) ---- */
+:root {
+  color-scheme: dark;
+  --surface-0: #0d0d0d; /* page plane */
+  --surface-1: #1a1a19; /* card surface */
+  --surface-2: #232322; /* elevated / hover */
+  --surface-3: #2b2b2a; /* input fields */
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --gridline: #2c2c2a;
+
+  --accent: #3987e5;
+  --accent-strong: #2a78d6;
+  --accent-bg: rgba(57, 135, 229, 0.14);
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #e66767;
+
+  /* source identity (fixed order) */
+  --src-rss: #3987e5;
+  --src-hackernews: #d95926;
+  --src-github: #199e70;
+  --src-arxiv: #c98500;
+  --src-reddit: #d55181;
+
+  /* category identity (fixed order) */
+  --cat-breaking_news: #e66767;
+  --cat-concept: #9085e9;
+  --cat-utility: #199e70;
+  --cat-workflow: #c98500;
+  --cat-learning: #008300;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 4px 12px rgba(0, 0, 0, 0.35), 0 20px 48px -12px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --surface-0: #f9f9f7;
+  --surface-1: #fcfcfb;
+  --surface-2: #f2f1ed;
+  --surface-3: #ffffff;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --border: rgba(11, 11, 11, 0.1);
+  --border-strong: rgba(11, 11, 11, 0.18);
+  --gridline: #e1e0d9;
+
+  --accent: #2a78d6;
+  --accent-strong: #1c5cab;
+  --accent-bg: rgba(42, 120, 214, 0.1);
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+
+  --src-rss: #2a78d6;
+  --src-hackernews: #eb6834;
+  --src-github: #1baf7a;
+  --src-arxiv: #eda100;
+  --src-reddit: #e87ba4;
+
+  --cat-breaking_news: #e34948;
+  --cat-concept: #4a3aa7;
+  --cat-utility: #1baf7a;
+  --cat-workflow: #eda100;
+  --cat-learning: #008300;
+
+  --shadow-card: 0 1px 2px rgba(11, 11, 11, 0.06), 0 8px 24px -8px rgba(11, 11, 11, 0.12);
+  --shadow-pop: 0 4px 12px rgba(11, 11, 11, 0.08), 0 24px 48px -12px rgba(11, 11, 11, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font: 15px/1.55 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+::selection {
+  background: var(--accent-bg);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--critical) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--critical) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--critical) 0%, transparent);
+  }
+}
+.pulse-now {
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-primary) 8%, transparent), transparent);
+  animation: shimmer 1.6s infinite;
+}
