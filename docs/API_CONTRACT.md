@@ -53,7 +53,7 @@ interface TopicOut {
   id: number;
   title: string;
   url: string;
-  source: string;                 // "rss" | "hackernews" | "github" | "arxiv" | "reddit"
+  source: string;                 // "rss" | "hackernews" | "github" | "arxiv" | "reddit" | "twitter"
   source_name: string;            // e.g. "OpenAI Blog", "r/LocalLLaMA"
   category: Category;
   snippet: string;
@@ -83,7 +83,8 @@ interface SettingsOut {
   llm_item_cap: number;
   feeds: { name: string; url: string; enabled: boolean }[];
   subreddits: { name: string; enabled: boolean }[];
-  sources_enabled: Record<string, boolean>; // rss, hackernews, github, arxiv, reddit
+  twitter_queries: { name: string; query: string; enabled: boolean }[]; // X search queries, e.g. "from:OpenAI"
+  sources_enabled: Record<string, boolean>; // rss, hackernews, github, arxiv, reddit, twitter
 }
 
 interface ModelInfo {

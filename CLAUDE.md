@@ -37,7 +37,7 @@ The system is a pipeline with a strict cost philosophy: **everything before the 
 
 **Backend** (`backend/app/`), stages executed by `orchestrator.py`, all state in SQLite (`data/research.db`, SQLModel models in `models.py` — Run, Item, Evaluation, Setting):
 
-1. `collectors/` — async, one module per source (rss, hackernews, github_trending, arxiv, reddit). Each returns normalized `RawItem`s; a source failing never fails the run. Each is runnable standalone via `python -m app.collectors.<name>`.
+1. `collectors/` — async, one module per source (rss, hackernews, github_trending, arxiv, reddit, twitter). Each returns normalized `RawItem`s; a source failing never fails the run. Each is runnable standalone via `python -m app.collectors.<name>`.
 2. `pipeline/categorize.py` — rule/keyword-based (no LLM) mapping into the 5 BRD categories (breaking_news, concept, utility, workflow, learning).
 3. `pipeline/filter.py` — URL + fuzzy-title dedupe (rapidfuzz), recency windows, engagement floors, per-category caps.
 4. `pipeline/signals.py` — **measured** virality/competition (not LLM opinion): engagement velocity from source metrics, Google Trends slope (unofficial API, degrades gracefully when throttled), cross-platform momentum, competition via Jina search. Missing components renormalize the blend weights.
@@ -52,7 +52,7 @@ The system is a pipeline with a strict cost philosophy: **everything before the 
 
 ## Conventions
 
-- Keep new research sources behind the `collectors/base.py` protocol and a `sources_enabled` settings toggle; login-required channels (Twitter/X, Reddit) are deliberately deferred.
+- Keep new research sources behind the `collectors/base.py` protocol and a `sources_enabled` settings toggle. Reddit's login-required path is still deliberately deferred (see degradations below). Twitter/X is active but uses cookie-based session auth, not the settings-table credentials pattern other sources use — see below.
 - Cost guards are load-bearing: per-category filter caps and `llm_item_cap` exist so a run costs cents. Don't bypass them.
 - Runtime settings (feeds, subreddits, keyword rules, model choice) belong in the Setting table via `/api/settings`, not hardcoded.
 
@@ -64,3 +64,14 @@ These are handled gracefully by design — a source going down never fails a run
 - **GitHub search API rate-limits (403) after ~4-5 unauthenticated requests** per run. Set `GITHUB_TOKEN` in `.env` to raise the ceiling (needs no scopes — public search only).
 - **Google Trends and Jina competition search (`s.jina.ai`) throttle anonymous requests** in this environment. `signals.py` renormalizes its blend weights when a component is unavailable and defaults competition to `"medium"` rather than failing.
 - 3 of the original default RSS feeds were dead and replaced/disabled: Anthropic has no public RSS feed (disabled), Microsoft AI Blog returned 404 on every URL tried (disabled), Meta AI Blog had no working feed (swapped for Meta Engineering Blog, which covers AI content and works).
+- **Twitter/X (`collectors/twitter.py`) authenticates via `twikit`/`twifork`** (an unofficial, reverse-engineered client — this violates X's ToS on automation, so it's meant to run against a dedicated secondary account, never a primary one) using a session cookie file at `data/twitter_cookies.json`. As of 2026, X retired the plain-HTTP login flow entirely (requires a JS-executed anti-bot token + optional passkey/WebAuthn), so `backend/login_twitter.py`'s automated login (`TWITTER_USERNAME`/`EMAIL`/`PASSWORD` in `.env`) reliably fails with `LoginRetired` and prints instructions for the actual working path: log into x.com in a real browser as the secondary account, export its cookies with a browser extension (e.g. "Cookie-Editor"), and save that JSON to `data/twitter_cookies.json` directly — `Client.load_cookies()` accepts that export format as-is. If the cookie file is missing, expired, or the account gets locked, the collector logs a message and returns 0 items rather than failing the run — same degrade-gracefully contract as every other source. The tracked accounts/keywords (`twitter_queries`) live in the Setting table like `feeds`/`subreddits`, editable via `/api/settings`. **`twikit>=2.3` on PyPI is broken** (X changed its bundle structure 2026-03-18); `requirements.txt` pins `twifork` instead, a maintained fork with the same `twikit` import name.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

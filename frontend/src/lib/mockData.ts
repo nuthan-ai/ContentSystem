@@ -502,7 +502,18 @@ export const mockSettings: SettingsOut = {
     { name: "artificial", enabled: false },
     { name: "mcp", enabled: true },
   ],
-  sources_enabled: { rss: true, hackernews: true, github: true, arxiv: true, reddit: true },
+  twitter_queries: [
+    { name: "OpenAI", query: "from:OpenAI", enabled: true },
+    { name: "AnthropicAI", query: "from:AnthropicAI", enabled: true },
+    { name: "GoogleDeepMind", query: "from:GoogleDeepMind", enabled: true },
+    { name: "xai", query: "from:xai", enabled: true },
+    {
+      name: "AI/LLM keyword search",
+      query: '(AI OR LLM OR "machine learning") min_faves:100 -is:retweet lang:en',
+      enabled: true,
+    },
+  ],
+  sources_enabled: { rss: true, hackernews: true, github: true, arxiv: true, reddit: true, twitter: true },
 };
 
 export const mockModels: ModelInfo[] = [

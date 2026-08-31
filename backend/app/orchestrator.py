@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 from sqlmodel import Session, select
 
-from .collectors import arxiv, github_trending, hackernews, reddit, rss
+from .collectors import arxiv, github_trending, hackernews, reddit, rss, twitter
 from .collectors.base import RawItem
 from .db import engine
 from .llm.openrouter import get_api_key
@@ -25,6 +25,7 @@ COLLECTOR_MODULES = {
     "github": github_trending,
     "arxiv": arxiv,
     "reddit": reddit,
+    "twitter": twitter,
 }
 
 # run_id -> asyncio.Queue[dict] ; presence of a key means the run is (or was)
@@ -69,9 +70,10 @@ def _load_settings_dict(session: Session) -> dict:
     return {
         "feeds": _get_setting(session, "feeds", None),
         "subreddits": _get_setting(session, "subreddits", None),
+        "twitter_queries": _get_setting(session, "twitter_queries", None),
         "sources_enabled": _get_setting(
             session, "sources_enabled",
-            {"rss": True, "hackernews": True, "github": True, "arxiv": True, "reddit": True},
+            {"rss": True, "hackernews": True, "github": True, "arxiv": True, "reddit": True, "twitter": True},
         ),
         "llm_item_cap": _get_setting(session, "llm_item_cap", 60),
         "category_cap": _get_setting(session, "category_cap", 15),

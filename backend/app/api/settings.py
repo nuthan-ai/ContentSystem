@@ -8,6 +8,7 @@ from sqlmodel import Session
 
 from ..collectors.reddit import DEFAULT_SUBREDDITS
 from ..collectors.rss import DEFAULT_FEEDS
+from ..collectors.twitter import DEFAULT_QUERIES as DEFAULT_TWITTER_QUERIES
 from ..config import settings as app_settings
 from ..db import engine
 from ..models import Setting
@@ -15,7 +16,7 @@ from ..models import Setting
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
 DEFAULT_SOURCES_ENABLED = {
-    "rss": True, "hackernews": True, "github": True, "arxiv": True, "reddit": True,
+    "rss": True, "hackernews": True, "github": True, "arxiv": True, "reddit": True, "twitter": True,
 }
 DEFAULT_KEYWORD_RULES: dict[str, list[str]] = {}
 
@@ -43,8 +44,15 @@ def seed_defaults() -> None:
             _set(session, "feeds", DEFAULT_FEEDS)
         if session.get(Setting, "subreddits") is None:
             _set(session, "subreddits", DEFAULT_SUBREDDITS)
-        if session.get(Setting, "sources_enabled") is None:
+        if session.get(Setting, "twitter_queries") is None:
+            _set(session, "twitter_queries", DEFAULT_TWITTER_QUERIES)
+        row = session.get(Setting, "sources_enabled")
+        if row is None:
             _set(session, "sources_enabled", DEFAULT_SOURCES_ENABLED)
+        else:
+            merged = {**DEFAULT_SOURCES_ENABLED, **row.value}
+            if merged != row.value:
+                _set(session, "sources_enabled", merged)
         if session.get(Setting, "llm_item_cap") is None:
             _set(session, "llm_item_cap", app_settings.llm_item_cap)
         if session.get(Setting, "category_cap") is None:
@@ -73,6 +81,7 @@ def _current_settings_out(session: Session) -> dict:
         "llm_item_cap": _get(session, "llm_item_cap", app_settings.llm_item_cap),
         "feeds": _get(session, "feeds", DEFAULT_FEEDS),
         "subreddits": _get(session, "subreddits", DEFAULT_SUBREDDITS),
+        "twitter_queries": _get(session, "twitter_queries", DEFAULT_TWITTER_QUERIES),
         "sources_enabled": _get(session, "sources_enabled", DEFAULT_SOURCES_ENABLED),
     }
 
@@ -89,6 +98,7 @@ class SettingsIn(BaseModel):
     llm_item_cap: int | None = None
     feeds: list[dict[str, Any]] | None = None
     subreddits: list[dict[str, Any]] | None = None
+    twitter_queries: list[dict[str, Any]] | None = None
     sources_enabled: dict[str, bool] | None = None
 
 
@@ -105,6 +115,8 @@ def update_settings(payload: SettingsIn):
             _set(session, "feeds", payload.feeds)
         if payload.subreddits is not None:
             _set(session, "subreddits", payload.subreddits)
+        if payload.twitter_queries is not None:
+            _set(session, "twitter_queries", payload.twitter_queries)
         if payload.sources_enabled is not None:
             _set(session, "sources_enabled", payload.sources_enabled)
         session.commit()

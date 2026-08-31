@@ -34,6 +34,7 @@
   --src-github: #199e70;
   --src-arxiv: #c98500;
   --src-reddit: #d55181;
+  --src-twitter: #a3a3a3;
 
   /* category identity (fixed order) */
   --cat-breaking_news: #e66767;
@@ -73,6 +74,7 @@
   --src-github: #1baf7a;
   --src-arxiv: #eda100;
   --src-reddit: #e87ba4;
+  --src-twitter: #4a4a4a;
 
   --cat-breaking_news: #e34948;
   --cat-concept: #4a3aa7;

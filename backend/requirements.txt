@@ -7,3 +7,4 @@ rapidfuzz>=3.9
 pydantic-settings>=2.5
 sse-starlette>=2.1
 python-dotenv>=1.0
+twifork>=2.3.5  # maintained fork of twikit (import name unchanged); upstream twikit==2.3.3 is broken by X's 2026-03-18 frontend change, see https://github.com/d60/twikit/issues/408

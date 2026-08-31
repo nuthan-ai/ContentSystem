@@ -17,6 +17,10 @@ class AppSettings(BaseSettings):
     github_token: str = ""
     llm_item_cap: int = 60
     database_url: str = f"sqlite:///{DATA_DIR / 'research.db'}"
+    twitter_username: str = ""
+    twitter_email: str = ""
+    twitter_password: str = ""
+    twitter_cookies_path: str = str(DATA_DIR / "twitter_cookies.json")
 
 
 settings = AppSettings()

@@ -57,7 +57,7 @@ export interface EvaluationOut {
   recommendation: string;
 }
 
-export type Source = "rss" | "hackernews" | "github" | "arxiv" | "reddit";
+export type Source = "rss" | "hackernews" | "github" | "arxiv" | "reddit" | "twitter";
 
 export interface TopicOut {
   id: number;
@@ -97,6 +97,12 @@ export interface SubredditConfig {
   enabled: boolean;
 }
 
+export interface TwitterQueryConfig {
+  name: string;
+  query: string;
+  enabled: boolean;
+}
+
 export interface SettingsOut {
   openrouter_model: string;
   api_key_set: boolean;
@@ -104,6 +110,7 @@ export interface SettingsOut {
   llm_item_cap: number;
   feeds: FeedConfig[];
   subreddits: SubredditConfig[];
+  twitter_queries: TwitterQueryConfig[];
   sources_enabled: Record<string, boolean>;
 }
 
